@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+*.env
+.venv*
+.vscode
+.idea
+__pycache__
+*.py[cod]
+.pytest_cache
+tests
+docs
+resources/input/*
+outputs/*
+.DS_Store
