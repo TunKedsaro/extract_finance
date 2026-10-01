@@ -24,33 +24,33 @@ uvicorn src.app.main:app --reload --port 8000
 Open <http://localhost:8000/docs> or send a request to `POST /api/v1/extractions`.
 The included sample files are already in `resources/input/`.
 
-## Input payloads
+## Run examples
 
 PDF:
-
-```json
-{"input_path": "CP ALL Financial Statement Q1 2026.pdf"}
-```
-
-XLSX:
-
-```json
-{"input_path": "PTT Financial Statement - Q1 2026.XLSX"}
-```
-
-DOCX:
-
-```json
-{"input_path": "CP_ALL_Financial_Statement_Q1_2026_editable.docx"}
-```
-
-Example:
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/extractions \
   -H 'Content-Type: application/json' \
-  -H 'X-Transaction-ID: poc-001' \
+  -H 'X-Transaction-ID: pdf-poc-001' \
+  -d '{"input_path":"CP ALL Financial Statement Q1 2026.pdf"}'
+```
+
+XLSX:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/extractions \
+  -H 'Content-Type: application/json' \
+  -H 'X-Transaction-ID: xlsx-poc-001' \
   -d '{"input_path":"PTT Financial Statement - Q1 2026.XLSX"}'
+```
+
+DOCX:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/extractions \
+  -H 'Content-Type: application/json' \
+  -H 'X-Transaction-ID: docx-poc-001' \
+  -d '{"input_path":"CP_ALL_Financial_Statement_Q1_2026_editable.docx"}'
 ```
 
 Run tests with `pytest`.
