@@ -5,6 +5,9 @@ from typing import Final
 
 import fitz
 import openpyxl
+from docx import Document
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 
 from ..core.exceptions import DocumentProcessingError, UnsupportedDocumentTypeError
 
@@ -13,9 +16,13 @@ PDF_MIME_TYPE: Final = "application/pdf"
 XLSX_MIME_TYPE: Final = (
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+DOCX_MIME_TYPE: Final = (
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
 MIME_TYPES: Final = {
     ".pdf": PDF_MIME_TYPE,
     ".xlsx": XLSX_MIME_TYPE,
+    ".docx": DOCX_MIME_TYPE,
 }
 
 
@@ -31,9 +38,15 @@ class DocumentParser:
     def to_content_blocks(self, file_bytes: bytes, mime_type: str) -> list[dict]:
         if mime_type == PDF_MIME_TYPE:
             return self.pdf_to_content_blocks(file_bytes)
-        if mime_type == XLSX_MIME_TYPE:
-            return [{"type": "text", "text": self.xlsx_to_text(file_bytes)}]
-        raise UnsupportedDocumentTypeError()
+
+        text_converter = {
+            XLSX_MIME_TYPE: self.xlsx_to_text,
+            DOCX_MIME_TYPE: self.docx_to_text,
+        }.get(mime_type)
+        if text_converter is None:
+            raise UnsupportedDocumentTypeError()
+
+        return [{"type": "text", "text": text_converter(file_bytes)}]
 
     @staticmethod
     def pdf_to_content_blocks(file_bytes: bytes) -> list[dict]:
@@ -128,3 +141,55 @@ class DocumentParser:
                 workbook.close()
 
         return "\n".join(lines)
+
+    @staticmethod
+    def docx_to_text(file_bytes: bytes) -> str:
+        """Flatten Word paragraphs and tables in their original document order."""
+
+        try:
+            document = Document(io.BytesIO(file_bytes))
+            lines: list[str] = []
+            table_number = 0
+
+            for block in document.iter_inner_content():
+                if isinstance(block, Paragraph):
+                    text = block.text.strip()
+                    if text:
+                        lines.append(text)
+                    continue
+
+                if isinstance(block, Table):
+                    table_number += 1
+                    table_lines = DocumentParser._docx_table_lines(block)
+                    if not table_lines:
+                        continue
+                    lines.append(f"=== Table: {table_number} ===")
+                    lines.extend(table_lines)
+                    lines.append("")
+
+            if not lines:
+                raise DocumentProcessingError(
+                    "The DOCX document contains no readable text."
+                )
+        except DocumentProcessingError:
+            raise
+        except Exception as exc:
+            raise DocumentProcessingError(
+                "The DOCX document could not be read."
+            ) from exc
+
+        return "\n".join(lines).strip()
+
+    @staticmethod
+    def _docx_table_lines(table: Table) -> list[str]:
+        """Represent table rows without losing empty column positions."""
+
+        lines: list[str] = []
+        for row_number, row in enumerate(table.rows, start=1):
+            values = [
+                " ".join(part.strip() for part in cell.text.splitlines() if part.strip())
+                for cell in row.cells
+            ]
+            if any(values):
+                lines.append(f"Row {row_number}: {' | '.join(values)}")
+        return lines

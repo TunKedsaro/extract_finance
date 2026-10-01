@@ -25,7 +25,8 @@ Request:
 }
 ```
 
-`input_path` is relative to `INPUT_DIR`. Supported extensions are `.pdf` and `.xlsx`.
+`input_path` is relative to `INPUT_DIR`. Supported extensions are `.pdf`, `.xlsx`,
+and `.docx`.
 The optional `X-Transaction-ID` header is included in logs and upstream request metadata.
 
 Success returns HTTP 200 and a `FinancialExtractionResult` directly, without a wrapper.
@@ -49,7 +50,7 @@ Common status codes:
 | 400 | Path is absolute or escapes `INPUT_DIR` |
 | 404 | Input file does not exist |
 | 413 | Input exceeds `MAX_INPUT_FILE_SIZE_BYTES` |
-| 415 | Extension is not PDF/XLSX |
+| 415 | Extension is not PDF/XLSX/DOCX |
 | 422 | Request payload or source document is invalid |
 | 500 | Configuration or output persistence failed |
 | 502 | LLM call failed or returned data outside the schema |

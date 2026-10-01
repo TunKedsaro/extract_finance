@@ -9,11 +9,11 @@ from .services.extraction_service import ExtractionService
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Extract financial statement data from a PDF or XLSX file."
+        description="Extract financial statement data from a PDF, XLSX, or DOCX file."
     )
     parser.add_argument(
         "input_path",
-        help="Path relative to INPUT_DIR, for example 'statement.pdf'",
+        help="Path relative to INPUT_DIR, for example 'statement.docx'",
     )
     parser.add_argument(
         "--transaction-id",

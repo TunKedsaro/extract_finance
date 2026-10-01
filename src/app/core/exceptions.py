@@ -25,7 +25,7 @@ class InputFileNotFoundError(AppError):
 class UnsupportedDocumentTypeError(AppError):
     code = "unsupported_document_type"
     status_code = 415
-    default_message = "Unsupported file type; use a PDF or XLSX file."
+    default_message = "Unsupported file type; use a PDF, XLSX, or DOCX file."
 
 
 class InputFileTooLargeError(AppError):

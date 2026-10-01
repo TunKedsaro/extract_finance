@@ -19,7 +19,7 @@ extract_finance/
 │   │   └── extraction.py               # LLM and public response schemas
 │   ├── services/
 │   │   ├── extraction_service.py       # Extraction orchestrator
-│   │   └── document_parser.py          # PDF/XLSX preprocessing
+│   │   └── document_parser.py          # PDF/XLSX/DOCX preprocessing
 │   ├── infrastructure/llm/
 │   │   └── anthropic_client.py         # Terrax/LiteLLM adapter
 │   └── prompts/
@@ -46,7 +46,8 @@ POST /api/v1/extractions or CLI
         ├── enforce type and size limits
         ├── DocumentParser
         │   ├── PDF: text page or rendered JPEG
-        │   └── XLSX: flattened text with column indentation
+        │   ├── XLSX: flattened text with column indentation
+        │   └── DOCX: paragraphs and tables in document order
         ├── AnthropicLLMClient
         ├── validate FinancialStatementData
         ├── derive quarter/reported_date

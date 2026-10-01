@@ -1,6 +1,6 @@
 # Financial Statement Extraction API
 
-บริการ POC สำหรับดึงข้อมูล Balance Sheet และ Income Statement จากไฟล์ PDF/XLSX
+บริการ POC สำหรับดึงข้อมูล Balance Sheet และ Income Statement จากไฟล์ PDF/XLSX/DOCX
 ด้วย Claude รองรับทั้งเอกสารภาษาไทยและอังกฤษ และมีทางเข้าใช้งานสองแบบ:
 
 - FastAPI สำหรับระบบอื่นเรียกผ่าน HTTP
@@ -69,7 +69,7 @@ cp .env.example .env
 ตั้งค่า `.env` ด้วย Terrax token โดยตรง หรือ LiteLLM proxy อย่างใดอย่างหนึ่ง
 ห้าม commit `.env` หรือ token จริง
 
-วาง PDF/XLSX ไว้ใน `resources/input/` แล้วเริ่ม API:
+วาง PDF/XLSX/DOCX ไว้ใน `resources/input/` แล้วเริ่ม API:
 
 ```bash
 uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -84,6 +84,15 @@ curl -X POST http://localhost:8000/api/v1/extractions \
   -H 'Content-Type: application/json' \
   -H 'X-Transaction-ID: poc-001' \
   -d '{"input_path":"PTT Financial Statement - Q1 2026.XLSX"}'
+```
+
+ตัวอย่างสำหรับ DOCX:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/extractions \
+  -H 'Content-Type: application/json' \
+  -H 'X-Transaction-ID: tunkedsaro' \
+  -d '{"input_path":"CP_ALL_Financial_Statement_Q1_2026_editable.docx"}'
 ```
 
 Swagger UI อยู่ที่ <http://localhost:8000/docs>
