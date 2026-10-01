@@ -1,6 +1,6 @@
 # Financial Statement Extraction API
 
-Extract balance sheet and income statement data from PDF, XLSX, and DOCX files.
+Proof of concept (POC) for extracting balance sheet and income statement data from PDF, XLSX, and DOCX files.
 
 ## Quick start
 
@@ -49,6 +49,7 @@ Example:
 ```bash
 curl -X POST http://localhost:8000/api/v1/extractions \
   -H 'Content-Type: application/json' \
+  -H 'X-Transaction-ID: poc-001' \
   -d '{"input_path":"PTT Financial Statement - Q1 2026.XLSX"}'
 ```
 
