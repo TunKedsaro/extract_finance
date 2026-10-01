@@ -12,7 +12,6 @@ htmlcov/
 ~$*
 tmp/
 
-resources/input/*
 !resources/input/.gitkeep
 outputs/*
 !outputs/.gitkeep
