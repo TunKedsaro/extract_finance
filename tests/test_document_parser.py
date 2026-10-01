@@ -5,9 +5,11 @@ from pathlib import Path
 import fitz
 import openpyxl
 import pytest
+from docx import Document
 
 from app.core.exceptions import DocumentProcessingError, UnsupportedDocumentTypeError
 from app.services.document_parser import (
+    DOCX_MIME_TYPE,
     MIME_TYPES,
     PDF_MIME_TYPE,
     XLSX_MIME_TYPE,
@@ -18,9 +20,10 @@ from app.services.document_parser import (
 def test_supported_mime_types() -> None:
     parser = DocumentParser()
 
-    assert set(MIME_TYPES) == {".pdf", ".xlsx"}
+    assert set(MIME_TYPES) == {".pdf", ".xlsx", ".docx"}
     assert parser.mime_type_for(Path("REPORT.PDF")) == PDF_MIME_TYPE
     assert parser.mime_type_for(Path("REPORT.XLSX")) == XLSX_MIME_TYPE
+    assert parser.mime_type_for(Path("REPORT.DOCX")) == DOCX_MIME_TYPE
 
     with pytest.raises(UnsupportedDocumentTypeError):
         parser.mime_type_for(Path("report.csv"))
@@ -89,3 +92,42 @@ def test_xlsx_preserves_sheet_and_column_position() -> None:
     assert "=== Sheet: Balance Sheet ===" in text
     assert "Current assets" in text
     assert "  Cash |     1250" in text
+
+
+def test_docx_preserves_paragraph_and_table_order() -> None:
+    document = Document()
+    document.add_paragraph("Balance sheet")
+    table = document.add_table(rows=2, cols=3)
+    table.rows[0].cells[0].text = "Item"
+    table.rows[0].cells[2].text = "Amount"
+    table.rows[1].cells[0].text = "Cash"
+    table.rows[1].cells[2].text = "1250"
+    document.add_paragraph("End of statement")
+    buffer = io.BytesIO()
+    document.save(buffer)
+
+    blocks = DocumentParser().to_content_blocks(
+        buffer.getvalue(),
+        DOCX_MIME_TYPE,
+    )
+    text = blocks[0]["text"]
+
+    assert [block["type"] for block in blocks] == ["text"]
+    assert text.index("Balance sheet") < text.index("=== Table: 1 ===")
+    assert "Row 1: Item |  | Amount" in text
+    assert "Row 2: Cash |  | 1250" in text
+    assert text.index("=== Table: 1 ===") < text.index("End of statement")
+
+
+def test_invalid_docx_is_reported_as_document_error() -> None:
+    with pytest.raises(DocumentProcessingError):
+        DocumentParser.docx_to_text(b"not a docx")
+
+
+def test_empty_docx_is_reported_as_document_error() -> None:
+    document = Document()
+    buffer = io.BytesIO()
+    document.save(buffer)
+
+    with pytest.raises(DocumentProcessingError):
+        DocumentParser.docx_to_text(buffer.getvalue())
